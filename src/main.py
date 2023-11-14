@@ -1,3 +1,6 @@
+"""
+My first machine learning program, I love this ♥
+"""
 import requests
 import csv
 import pandas as pd
@@ -16,11 +19,17 @@ call = requests.session()
 
 
 def main():
+    """
+    Program entry point
+    """
     init()
     session()
 
 
 def init():
+    """
+    Init data file. If no data exists, create headers, if it does, set total games played as last line amount
+    """
     try:
         datafile = pd.read_csv(datafilepath)
         num_lines = len(datafile)
@@ -36,6 +45,9 @@ def init():
 
 
 def session():
+    """
+    One game session, lasts while player still have money to play
+    """
     while 1:
         load()
         while not partie.is_lose():
@@ -44,6 +56,11 @@ def session():
 
 
 def play():
+    """
+    One game, hit or hold is set randomly, will be upgraded to be smarter in the future
+    Also, print game result
+    :return:
+    """
     new_deal()
     while partie.state == "IN_GAME":
         calltype = "hit" if random.getrandbits(1) == 1 else "hold"
@@ -52,14 +69,22 @@ def play():
             partie.add_dealer_card((response["dealerHand"][-1]["rank"]))
         else:
             partie.add_player_card(response["playerHand"][-1]["rank"])
+        if partie.is_flag():
+            response = requests.post(url + "flag")
+            print(response)
+            input()
         partie.state = response["state"]
     update_data()
     print(partie)
 
 
 def new_deal():
+    """
+    Create a new deal for a game.
+    :return:
+    """
     partie.clear_partie()
-    deal = call.post(url + "deal", json={'bet': 25}).json()
+    deal = call.post(url + "deal", json={'bet': 50}).json()
     partie.add_dealer_card(deal["dealerHand"][0]["rank"])
     partie.cash = deal["cash"]
     partie.state = deal["state"]
@@ -68,11 +93,19 @@ def new_deal():
 
 
 def save_to_file():
+    """
+    Save game data in the .csv file. Called once per session
+    :return:
+    """
     print("Saving data state")
     writer.writerow(data.get_game_data())
 
 
 def load():
+    """
+    Load a new game, called when a new session start.
+    :return:
+    """
     call.cookies.clear()
     response = call.get(url + "load").json()
     partie.cash = response["cash"]
@@ -84,6 +117,10 @@ def load():
 
 
 def update_data():
+    """
+    Update data when game is over.
+    :return:
+    """
     data.play_game()
     if partie.state == "WON":
         data.win_game()

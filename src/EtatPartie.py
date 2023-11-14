@@ -1,32 +1,55 @@
+
 class EtatPartie:
+    """
+    Set all data for ONE game
+    """
     def __init__(self, state, cash):
         self.state = state
         self.cash = cash
         self.dealer_cards = []
         self.player_cards = []
 
+    def sum_player(self):
+        """
+        calculate sum of player cards
+        :return: Player score
+        """
+        score = 0
+        for card in self.player_cards:
+            if card == "J" or card == "Q" or card == "K":
+                score += 10
+            elif card == "A":
+                score += 11 # Logic will be added to get either 1 or 11
+            else:
+                score += int(card)
+
+        return score
+
     def clear_partie(self):
+        """
+        Generate a new card dead
+        """
         self.player_cards = []
         self.dealer_cards = []
 
     def add_dealer_card(self, carte):
         """
-
-        :param carte:
+        Add a card to dealer hand
+        :param carte: The card to add
         """
         self.dealer_cards.append(carte)
 
     def add_player_card(self, carte):
         """
-
-        :param carte:
+        Add a card to player hand
+        :param carte: The card to add
         """
         self.player_cards.append(carte)
 
     def str_player_cards(self):
         """
-
-        :return:
+        Stringify player cards
+        :return: A string of player card
         """
         string = "( "
         for card in self.player_cards:
@@ -35,8 +58,8 @@ class EtatPartie:
 
     def str_dealer_cards(self):
         """
-
-        :return:
+        Stringify dealer cards
+        :return: A string of dealer card
         """
         string = "( "
         for card in self.dealer_cards:
@@ -45,15 +68,15 @@ class EtatPartie:
 
     def is_lose(self):
         """
-
-        :return:
+        Define if player lost session
+        :return: boolean of session lost
         """
         return self.cash == 0
 
     def is_flag(self):
         """
-
-        :return:
+        Define if player got the flag
+        :return: boolean of session won
         """
         return self.cash >= 2000
 
