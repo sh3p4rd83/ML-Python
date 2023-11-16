@@ -19,7 +19,24 @@ class EtatPartie:
             if card == "J" or card == "Q" or card == "K":
                 score += 10
             elif card == "A":
-                score += 11 # Logic will be added to get either 1 or 11
+                score += 1 # TODO
+            else:
+                score += int(card)
+
+        return score
+
+
+    def sum_dealer(self):
+        """
+        calculate sum of player cards
+        :return: Player score
+        """
+        score = 0
+        for card in self.dealer_cards:
+            if card == "J" or card == "Q" or card == "K":
+                score += 10
+            elif card == "A":
+                score += 1 #  TODO
             else:
                 score += int(card)
 

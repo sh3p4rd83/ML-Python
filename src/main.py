@@ -1,21 +1,27 @@
 """
 My first machine learning program, I love this ♥
 """
+import sys
+
 import requests
 import csv
 import pandas as pd
 import random
 
 from src.EtatPartie import EtatPartie
+from src.EtatUnique import EtatUnique
 from src.GameData import GameData
+from src.LearningManager import LearningManager
 
 url = "http://localhost:3000/"
 partie = EtatPartie("", 0)
 data = GameData(0, 0, 0, 0)
 datafilepath = "../data/game_data.csv"
-file = open(datafilepath, "a", newline='')
-writer = csv.writer(file)
+data_file = open(datafilepath, "a", newline='')
+data_writer = csv.writer(data_file)
 call = requests.session()
+manager = LearningManager()
+states = []
 
 
 def main():
@@ -32,27 +38,35 @@ def init():
     """
     try:
         datafile = pd.read_csv(datafilepath)
-        num_lines = len(datafile)
+        num_lines_data = len(datafile)
     except pd.errors.EmptyDataError:
-        num_lines = 0
+        num_lines_data = 0
 
-    if num_lines == 0:
-        writer.writerow(["Total games played", "Session games played", "Wins", "Loses"])
+    if num_lines_data == 0:
+        data_writer.writerow(["Total games played", "Session games played", "Wins", "Loses"])
         data.total_games_played = 0
-    elif num_lines != 1:
+    elif num_lines_data != 1:
         final = datafile.iloc[-1]["Total games played"]
         data.total_games_played = final
+
+
 
 
 def session():
     """
     One game session, lasts while player still have money to play
     """
+    session_played = 0
     while 1:
         load()
         while not partie.is_lose():
             play()
         save_to_file()
+        session_played += 1
+
+        if session_played >= 10:
+            manager.save()
+            session_played = 0
 
 
 def play():
@@ -62,8 +76,12 @@ def play():
     :return:
     """
     new_deal()
+    states.clear()
     while partie.state == "IN_GAME":
+        player_sum = partie.sum_player()
+        dealer_sum = partie.sum_dealer()
         calltype = "hit" if random.getrandbits(1) == 1 else "hold"
+        states.append(EtatUnique(dealer_sum, player_sum, calltype))
         response = call.post(url + calltype, headers={'Accept': 'application/json'}).json()
         if calltype == "hold":
             partie.add_dealer_card((response["dealerHand"][-1]["rank"]))
@@ -75,7 +93,7 @@ def play():
             input()
         partie.state = response["state"]
     update_data()
-    print(partie)
+    # print(partie)
 
 
 def new_deal():
@@ -98,7 +116,7 @@ def save_to_file():
     :return:
     """
     print("Saving data state")
-    writer.writerow(data.get_game_data())
+    data_writer.writerow(data.get_game_data())
 
 
 def load():
@@ -126,7 +144,17 @@ def update_data():
         data.win_game()
     if partie.state == "LOST":
         data.lose_game()
+    for s in states:
+        if partie.state == "WON":
+            manager.win_game(s)
+        if partie.state == "LOST":
+            manager.lose_game(s)
+
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        manager.save()
+        sys.exit(0)
