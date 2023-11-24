@@ -6,7 +6,6 @@ import sys
 import requests
 import csv
 import pandas as pd
-import random
 
 from src.EtatPartie import EtatPartie
 from src.EtatUnique import EtatUnique
@@ -50,8 +49,6 @@ def init():
         data.total_games_played = final
 
 
-
-
 def session():
     """
     One game session, lasts while player still have money to play
@@ -60,11 +57,13 @@ def session():
     while 1:
         load()
         while not partie.is_lose():
+            if partie.is_flag():
+                print("FLAG")
             play()
         save_to_file()
         session_played += 1
 
-        if session_played >= 10:
+        if session_played >= 50:
             manager.save()
             session_played = 0
 
@@ -80,17 +79,15 @@ def play():
     while partie.state == "IN_GAME":
         player_sum = partie.sum_player()
         dealer_sum = partie.sum_dealer()
-        calltype = "hit" if random.getrandbits(1) == 1 else "hold"
-        states.append(EtatUnique(dealer_sum, player_sum, calltype))
+        etat = EtatUnique(dealer_sum, player_sum, "")
+        calltype = manager.best_decision(etat)
+        etat.action = calltype
+        states.append(etat)
         response = call.post(url + calltype, headers={'Accept': 'application/json'}).json()
         if calltype == "hold":
             partie.add_dealer_card((response["dealerHand"][-1]["rank"]))
         else:
             partie.add_player_card(response["playerHand"][-1]["rank"])
-        if partie.is_flag():
-            response = requests.post(url + "flag")
-            print(response)
-            input()
         partie.state = response["state"]
     update_data()
     # print(partie)
@@ -115,7 +112,7 @@ def save_to_file():
     Save game data in the .csv file. Called once per session
     :return:
     """
-    print("Saving data state")
+    print(f"Win % = {data.wins / data.session_games_played * 100}, {data.session_games_played}")
     data_writer.writerow(data.get_game_data())
 
 
@@ -131,7 +128,6 @@ def load():
     data.session_games_played = 0
     data.wins = 0
     data.loses = 0
-    print("Loaded new game session")
 
 
 def update_data():
@@ -149,7 +145,6 @@ def update_data():
             manager.win_game(s)
         if partie.state == "LOST":
             manager.lose_game(s)
-
 
 
 if __name__ == '__main__':

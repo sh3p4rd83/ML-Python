@@ -1,8 +1,8 @@
-
 class EtatPartie:
     """
     Set all data for ONE game
     """
+
     def __init__(self, state, cash):
         self.state = state
         self.cash = cash
@@ -19,12 +19,11 @@ class EtatPartie:
             if card == "J" or card == "Q" or card == "K":
                 score += 10
             elif card == "A":
-                score += 1 # TODO
+                score += 1  # TODO
             else:
                 score += int(card)
 
         return score
-
 
     def sum_dealer(self):
         """
@@ -36,7 +35,7 @@ class EtatPartie:
             if card == "J" or card == "Q" or card == "K":
                 score += 10
             elif card == "A":
-                score += 1 #  TODO
+                score += 1  # TODO
             else:
                 score += int(card)
 
