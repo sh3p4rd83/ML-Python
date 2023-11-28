@@ -58,7 +58,7 @@ def session():
         load()
         while not partie.is_lose():
             if partie.is_flag():
-                print("FLAG")
+                print("FLAG")  # PMC pourquoi ne print tu pas le flag pour vrai en faisant un POST sur /flag et en printant la réponse
             play()
         save_to_file()
         session_played += 1
