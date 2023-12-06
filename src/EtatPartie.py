@@ -15,14 +15,21 @@ class EtatPartie:
         :return: Player score
         """
         score = 0
+        aces = 0
         for card in self.player_cards:
             if card == "J" or card == "Q" or card == "K":
                 score += 10
             elif card == "A":
-                score += 1  # TODO
+
+                aces += 1
             else:
                 score += int(card)
 
+        for ace in range(aces):
+            if score + 11 > 21:
+                score += 1
+            else:
+                score += 11
         return score
 
     def sum_dealer(self):
@@ -31,14 +38,21 @@ class EtatPartie:
         :return: Player score
         """
         score = 0
+        aces = 0
+
         for card in self.dealer_cards:
             if card == "J" or card == "Q" or card == "K":
                 score += 10
             elif card == "A":
-                score += 1  # TODO
+                aces += 1
             else:
                 score += int(card)
 
+        for ace in range(aces):
+            if score + 11 > 21:
+                score += 1
+            else:
+                score += 11
         return score
 
     def clear_partie(self):

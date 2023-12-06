@@ -3,12 +3,13 @@ class EtatUnique:
     Etat unique dans lequel une partie peut se retrouver
     """
 
-    def __init__(self, dealer_points, player_points, action, wins=0, loses=0):
+    def __init__(self, dealer_points, player_points, action, wins=0, loses=0, deck=""):
         self.dealer_points = dealer_points
         self.player_points = player_points
         self.action = action
         self.wins = wins
         self.loses = loses
+        self.deck = deck
 
     def get_game_status(self):
         """
@@ -21,7 +22,8 @@ class EtatUnique:
             self.player_points,
             self.action,
             self.wins,
-            self.loses
+            self.loses,
+            self.deck
         ]
 
     def get_hashed_game_status(self):
@@ -29,7 +31,7 @@ class EtatUnique:
         Transforme un état en hash unique pour comparaison et storage
         :return: Hash unique
         """
-        return hash(f"{self.dealer_points}, {self.player_points}, {self.action}")
+        return hash(f"{self.dealer_points}, {self.player_points}, {self.action}, {self.deck}")
 
     def win(self):
         """
